@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ workshop.name }}{% endblock %}
+{% block header %}{{ workshop.name }}{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('add_product') }}?workshop={{ workshop.id }}" class="btn btn-success btn-block">➕ Добавить новый продукт в цех</a>
+    </div>
+
+    <h2 style="margin-bottom: 15px;">Продукты в цехе:</h2>
+
+    {% if stocks %}
+        {% for stock in stocks %}
+            <div class="card">
+                <!-- Форма для быстрого обновления количества -->
+                <form method="POST" action="{{ url_for('update_stock') }}" style="margin-bottom: 10px;">
+                    <input type="hidden" name="product_id" value="{{ stock.product.id }}">
+                    <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+
+                    <div class="product-row" style="display: flex; align-items: center; gap: 10px;">
+                        <div style="flex: 2;">
+                            <strong>{{ stock.product.name }}</strong>
+                            {% if stock.product.category %}
+                                <span style="font-size: 12px; color: #999; margin-left: 8px;">{{ stock.product.category }}</span>
+                            {% endif %}
+                            {% if stock.product.type == 'retail' %}
+                                <span style="font-size: 12px; color: #ff6b6b;">(привозной)</span>
+                            {% elif stock.product.type == 'ready_dish' %}
+                                <span style="font-size: 12px; color: #51cf66;">(блюдо)</span>
+                            {% elif stock.product.type == 'semi_finished' %}
+                                <span style="font-size: 12px; color: #ff922b;">(полуфабрикат)</span>
+                            {% endif %}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <input type="number" name="quantity" value="{{ stock.quantity }}" step="0.001"
+                                   style="width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <span style="color: #666;">{{ stock.product.unit }}</span>
+                        </div>
+                        <button type="submit" class="btn btn-success" style="padding: 8px 15px;">Обновить</button>
+                    </div>
+                </form>
+
+                <!-- Кнопки прихода и расхода -->
+                <div style="display: flex; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                    <a href="{{ url_for('movement', product_id=stock.product.id, workshop_id=workshop.id) }}?type=income"
+                       class="btn" style="flex: 1; padding: 8px; text-align: center; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;">
+                       📦 Приход
+                    </a>
+                    <a href="{{ url_for('movement', product_id=stock.product.id, workshop_id=workshop.id) }}?type=expense"
+                       class="btn" style="flex: 1; padding: 8px; text-align: center; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px;">
+                       ➖ Расход
+                    </a>
+                </div>
+
+                <!-- Поле для минимального остатка -->
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd;">
+                    <form method="POST" action="{{ url_for('set_min_stock') }}" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="hidden" name="product_id" value="{{ stock.product.id }}">
+                        <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+
+                        <span style="font-size: 13px; color: #666;">Минимум:</span>
+                        <input type="number" name="min_stock" value="{{ stock.min_stock }}" step="0.001"
+                               style="width: 70px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                        <span style="font-size: 12px; color: #666;">{{ stock.product.unit }}</span>
+                        <button type="submit" class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;">Установить</button>
+                    </form>
+                </div>
+
+                <!-- Предупреждение если мало -->
+                {% if stock.min_stock > 0 and stock.quantity < stock.min_stock %}
+                    <div style="background-color: #fff3cd; color: #856404; padding: 8px; border-radius: 4px; margin-top: 10px; font-size: 13px;">
+                        ⚠️ <strong>Мало!</strong> Осталось {{ stock.quantity }} {{ stock.product.unit }},
+                        нужно минимум {{ stock.min_stock }} {{ stock.product.unit }}.
+                        Закажите ещё {{ (stock.min_stock - stock.quantity)|round(2) }} {{ stock.product.unit }}.
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card" style="text-align: center; padding: 30px;">
+            <p style="color: #999;">В этом цехе пока нет продуктов</p>
+            <a href="{{ url_for('add_product') }}?workshop={{ workshop.id }}" class="btn btn-success" style="margin-top: 10px;">➕ Добавить первый продукт</a>
+        </div>
+    {% endif %}
+{% endblock %}
+<!-- Кнопки прихода, расхода и быстрого заказа -->
+<div style="display: flex; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+    <a href="{{ url_for('movement', product_id=stock.product.id, workshop_id=workshop.id) }}?type=income"
+       class="btn" style="flex: 1; padding: 8px; text-align: center; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;">
+       📦 Приход
+    </a>
+    <a href="{{ url_for('movement', product_id=stock.product.id, workshop_id=workshop.id) }}?type=expense"
+       class="btn" style="flex: 1; padding: 8px; text-align: center; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px;">
+       ➖ Расход
+    </a>
+    <a href="{{ url_for('quick_order', product_id=stock.product.id, workshop_id=workshop.id) }}"
+       class="btn" style="flex: 0.5; padding: 8px; text-align: center; background-color: #ffc107; color: #333; text-decoration: none; border-radius: 4px;">
+       📋 Заказ
+    </a>
+</div>

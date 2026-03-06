@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Журнал движений{% endblock %}
+{% block header %}📋 Журнал движений{% endblock %}
+
+{% block content %}
+<!-- Фильтры -->
+<div class="card">
+    <form method="GET" action="{{ url_for('movements') }}" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <select name="workshop" class="search-box" style="flex: 1; margin-bottom: 0;">
+            <option value="">Все цеха</option>
+            {% for w in workshops %}
+                <option value="{{ w.id }}" {% if selected_workshop == w.id %}selected{% endif %}>
+                    {{ w.name }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <select name="product" class="search-box" style="flex: 1; margin-bottom: 0;">
+            <option value="">Все продукты</option>
+            {% for p in products %}
+                <option value="{{ p.id }}" {% if selected_product == p.id %}selected{% endif %}>
+                    {{ p.name }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit" class="btn btn-primary">Фильтр</button>
+        <a href="{{ url_for('movements') }}" class="btn btn-secondary">Сброс</a>
+    </form>
+</div>
+
+<!-- Список движений -->
+<div class="card">
+    <h3>История движений</h3>
+    
+    {% if movements %}
+        {% for m in movements %}
+            <div style="padding: 12px; border-bottom: 1px solid #eee; 
+                        {% if m.movement_type == 'income' or m.quantity > 0 %}border-left: 4px solid #28a745;{% else %}border-left: 4px solid #dc3545;{% endif %}
+                        margin-bottom: 5px; padding-left: 15px;">
+                
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <strong>{{ m.product.name }}</strong>
+                        <span style="color: #666; font-size: 12px; margin-left: 8px;">
+                            {{ m.workshop.name }}
+                        </span>
+                    </div>
+                    <div style="color: #999; font-size: 12px;">
+                        {{ m.timestamp.strftime('%d.%m.%Y %H:%M') }}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 5px;">
+                    {% if m.movement_type == 'income' or m.quantity > 0 %}
+                        <span style="color: #28a745; font-weight: bold;">
+                            +{{ m.quantity }} {{ m.product.unit }}
+                        </span>
+                    {% else %}
+                        <span style="color: #dc3545; font-weight: bold;">
+                            {{ m.quantity }} {{ m.product.unit }}
+                        </span>
+                    {% endif %}
+                    <span style="color: #666; margin-left: 10px;">
+                        {% if m.reason %}
+                            {{ m.reason }}
+                        {% else %}
+                            {% if m.movement_type == 'income' %}Приход{% elif m.movement_type == 'expense' %}Расход{% else %}Движение{% endif %}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                {% if m.comment %}
+                    <div style="font-size: 12px; color: #666; margin-top: 3px; background: #f8f9fa; padding: 3px 8px; border-radius: 4px;">
+                        💬 {{ m.comment }}
+                    </div>
+                {% endif %}
+                
+                <div style="font-size: 11px; color: #999; margin-top: 3px;">
+                    Пользователь: {{ m.user or 'система' }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 30px; color: #999;">
+            <div style="font-size: 48px; margin-bottom: 20px;">📭</div>
+            <h3>Нет движений</h3>
+            <p>Пока не было ни приходов, ни расходов</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

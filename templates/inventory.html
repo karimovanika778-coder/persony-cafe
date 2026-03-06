@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Полная инвентаризация{% endblock %}
+{% block header %}📊 Инвентаризация{% endblock %}
+
+{% block content %}
+
+<!-- Быстрое добавление продукта -->
+<div class="card" style="background: #e3f2fd; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h3 style="margin: 0;">➕ Быстрое добавление продукта</h3>
+            <p style="margin: 5px 0 0 0; color: #666;">Добавьте новый продукт сразу в нужную группу</p>
+        </div>
+        <a href="{{ url_for('add_product') }}" class="btn btn-success">➕ Новый продукт</a>
+    </div>
+</div>
+
+<!-- Основная карточка с инвентаризацией -->
+<div class="card">
+    <div style="margin-bottom: 20px;">
+        <h3>Все продукты по алфавиту</h3>
+        <p style="color: #666;">Введите фактические остатки по каждому цеху</p>
+    </div>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button class="btn btn-success" onclick="saveInventory()">💾 Сохранить все изменения</button>
+        <button class="btn btn-secondary" onclick="expandAll()">🔽 Развернуть всё</button>
+        <button class="btn btn-secondary" onclick="collapseAll()">🔼 Свернуть всё</button>
+    </div>
+</div>
+
+<!-- ИНГРЕДИЕНТЫ -->
+{% if ingredients %}
+<div class="card">
+    <h3 style="color: #17a2b8;">🌿 Ингредиенты</h3>
+    {% for product in ingredients %}
+    <div class="product-group" id="product-{{ product.id }}">
+        <div class="product-header" onclick="toggleProduct({{ product.id }})" style="cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 6px; margin: 5px 0;">
+            <span style="font-weight: bold;">{{ product.name }}</span>
+            <span style="color: #666; margin-left: 10px;">({{ product.unit }}{% if product.category %}, {{ product.category }}{% endif %})</span>
+            <span style="float: right;">▼</span>
+        </div>
+        <div class="product-details-{{ product.id }}" style="display: none; padding: 10px;">
+            {% for workshop in workshops %}
+            <div style="display: flex; align-items: center; margin-bottom: 8px; padding: 5px; border-bottom: 1px dashed #eee;">
+                <div style="width: 120px; font-weight: 500;">{{ workshop.name }}:</div>
+                <input type="number" 
+                       id="stock-{{ product.id }}-{{ workshop.id }}"
+                       class="quantity-input" 
+                       style="width: 100px; margin-right: 10px;"
+                       step="0.001"
+                       value="{{ product.stocks[workshop.id].quantity if workshop.id in product.stocks else 0 }}">
+                <span>{{ product.unit }}</span>
+                <button class="btn btn-secondary" style="margin-left: 10px; padding: 5px 10px;" 
+                        onclick="setZero({{ product.id }}, {{ workshop.id }})">0</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ПОЛУФАБРИКАТЫ -->
+{% if semi_finished %}
+<div class="card">
+    <h3 style="color: #fd7e14;">🥩 Полуфабрикаты</h3>
+    {% for product in semi_finished %}
+    <div class="product-group" id="product-{{ product.id }}">
+        <div class="product-header" onclick="toggleProduct({{ product.id }})" style="cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 6px; margin: 5px 0;">
+            <span style="font-weight: bold;">{{ product.name }}</span>
+            <span style="color: #666; margin-left: 10px;">({{ product.unit }}{% if product.category %}, {{ product.category }}{% endif %})</span>
+            <span style="float: right;">▼</span>
+        </div>
+        <div class="product-details-{{ product.id }}" style="display: none; padding: 10px;">
+            {% for workshop in workshops %}
+            <div style="display: flex; align-items: center; margin-bottom: 8px; padding: 5px; border-bottom: 1px dashed #eee;">
+                <div style="width: 120px; font-weight: 500;">{{ workshop.name }}:</div>
+                <input type="number" 
+                       id="stock-{{ product.id }}-{{ workshop.id }}"
+                       class="quantity-input" 
+                       style="width: 100px; margin-right: 10px;"
+                       step="0.001"
+                       value="{{ product.stocks[workshop.id].quantity if workshop.id in product.stocks else 0 }}">
+                <span>{{ product.unit }}</span>
+                <button class="btn btn-secondary" style="margin-left: 10px; padding: 5px 10px;" 
+                        onclick="setZero({{ product.id }}, {{ workshop.id }})">0</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ГОТОВЫЕ БЛЮДА -->
+{% if ready_dishes %}
+<div class="card">
+    <h3 style="color: #28a745;">🍽️ Готовые блюда</h3>
+    {% for product in ready_dishes %}
+    <div class="product-group" id="product-{{ product.id }}">
+        <div class="product-header" onclick="toggleProduct({{ product.id }})" style="cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 6px; margin: 5px 0;">
+            <span style="font-weight: bold;">{{ product.name }}</span>
+            <span style="color: #666; margin-left: 10px;">({{ product.unit }}{% if product.category %}, {{ product.category }}{% endif %})</span>
+            <span style="float: right;">▼</span>
+        </div>
+        <div class="product-details-{{ product.id }}" style="display: none; padding: 10px;">
+            {% for workshop in workshops %}
+            <div style="display: flex; align-items: center; margin-bottom: 8px; padding: 5px; border-bottom: 1px dashed #eee;">
+                <div style="width: 120px; font-weight: 500;">{{ workshop.name }}:</div>
+                <input type="number" 
+                       id="stock-{{ product.id }}-{{ workshop.id }}"
+                       class="quantity-input" 
+                       style="width: 100px; margin-right: 10px;"
+                       step="0.001"
+                       value="{{ product.stocks[workshop.id].quantity if workshop.id in product.stocks else 0 }}">
+                <span>{{ product.unit }}</span>
+                <button class="btn btn-secondary" style="margin-left: 10px; padding: 5px 10px;" 
+                        onclick="setZero({{ product.id }}, {{ workshop.id }})">0</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ПРИВОЗНЫЕ -->
+{% if retail %}
+<div class="card">
+    <h3 style="color: #dc3545;">📦 Привозные товары</h3>
+    {% for product in retail %}
+    <div class="product-group" id="product-{{ product.id }}">
+        <div class="product-header" onclick="toggleProduct({{ product.id }})" style="cursor: pointer; padding: 10px; background: #f8f9fa; border-radius: 6px; margin: 5px 0;">
+            <span style="font-weight: bold;">{{ product.name }}</span>
+            <span style="color: #666; margin-left: 10px;">({{ product.unit }}{% if product.category %}, {{ product.category }}{% endif %})</span>
+            <span style="float: right;">▼</span>
+        </div>
+        <div class="product-details-{{ product.id }}" style="display: none; padding: 10px;">
+            {% for workshop in workshops %}
+            <div style="display: flex; align-items: center; margin-bottom: 8px; padding: 5px; border-bottom: 1px dashed #eee;">
+                <div style="width: 120px; font-weight: 500;">{{ workshop.name }}:</div>
+                <input type="number" 
+                       id="stock-{{ product.id }}-{{ workshop.id }}"
+                       class="quantity-input" 
+                       style="width: 100px; margin-right: 10px;"
+                       step="0.001"
+                       value="{{ product.stocks[workshop.id].quantity if workshop.id in product.stocks else 0 }}">
+                <span>{{ product.unit }}</span>
+                <button class="btn btn-secondary" style="margin-left: 10px; padding: 5px 10px;" 
+                        onclick="setZero({{ product.id }}, {{ workshop.id }})">0</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+// Сохранение всех изменений
+function saveInventory() {
+    const updates = [];
+    
+    // Собираем все поля ввода
+    document.querySelectorAll('input[id^="stock-"]').forEach(input => {
+        const idParts = input.id.split('-');
+        const productId = parseInt(idParts[1]);
+        const workshopId = parseInt(idParts[2]);
+        const quantity = parseFloat(input.value) || 0;
+        
+        updates.push({
+            product_id: productId,
+            workshop_id: workshopId,
+            quantity: quantity
+        });
+    });
+    
+    // Отправляем на сервер
+    fetch('/save_inventory', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({updates: updates})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Инвентаризация сохранена!');
+        } else {
+            alert('❌ Ошибка при сохранении');
+        }
+    });
+}
+
+// Установить значение 0 для конкретного продукта и цеха
+function setZero(productId, workshopId) {
+    document.getElementById(`stock-${productId}-${workshopId}`).value = 0;
+}
+
+// Показать/скрыть продукт
+function toggleProduct(productId) {
+    const details = document.querySelector(`.product-details-${productId}`);
+    if (details.style.display === 'none' || details.style.display === '') {
+        details.style.display = 'block';
+    } else {
+        details.style.display = 'none';
+    }
+}
+
+// Развернуть все продукты
+function expandAll() {
+    document.querySelectorAll('[class^="product-details-"]').forEach(el => {
+        el.style.display = 'block';
+    });
+}
+
+// Свернуть все продукты
+function collapseAll() {
+    document.querySelectorAll('[class^="product-details-"]').forEach(el => {
+        el.style.display = 'none';
+    });
+}
+</script>
+
+<style>
+.quantity-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.quantity-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+.product-header:hover {
+    background-color: #e9ecef !important;
+}
+</style>
+{% endblock %}

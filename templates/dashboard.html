@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд{% endblock %}
+{% block header %}📊 Дашборд{% endblock %}
+
+{% block content %}
+<!-- Статистика в цифрах -->
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+        <div style="font-size: 32px; margin-bottom: 10px;">📦</div>
+        <div style="font-size: 28px; font-weight: bold;">{{ total_products }}</div>
+        <div style="font-size: 14px; opacity: 0.9;">Всего продуктов</div>
+    </div>
+    
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; border: none;">
+        <div style="font-size: 32px; margin-bottom: 10px;">💰</div>
+        <div style="font-size: 28px; font-weight: bold;">{{ total_stock }}</div>
+        <div style="font-size: 14px; opacity: 0.9;">Всего остатков</div>
+    </div>
+    
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); color: #333; border: none;">
+        <div style="font-size: 32px; margin-bottom: 10px;">⚠️</div>
+        <div style="font-size: 28px; font-weight: bold;">{{ low_stock_count }}</div>
+        <div style="font-size: 14px; opacity: 0.9;">Нужно заказать</div>
+    </div>
+    
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border: none;">
+        <div style="font-size: 32px; margin-bottom: 10px;">📋</div>
+        <div style="font-size: 28px; font-weight: bold;">{{ active_orders }}</div>
+        <div style="font-size: 14px; opacity: 0.9;">Активных заказов</div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="card">
+    <h3>⚡ Быстрые действия</h3>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+        <a href="{{ url_for('inventory') }}" class="btn btn-success" style="text-align: center;">📊 Инвентаризация</a>
+        <a href="{{ url_for('scan') }}" class="btn btn-primary" style="text-align: center;">📷 Сканер</a>
+        <a href="{{ url_for('orders') }}" class="btn btn-warning" style="text-align: center;">📋 Заказы</a>
+        <a href="{{ url_for('add_product') }}" class="btn btn-secondary" style="text-align: center;">➕ Добавить</a>
+    </div>
+</div>
+
+<!-- График движений (простой) -->
+<div class="card">
+    <h3>📈 Движения за последние 7 дней</h3>
+    <div style="height: 200px; display: flex; align-items: flex-end; gap: 10px; margin-top: 20px;">
+        {% for day in movements %}
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: {{ day.height }}px; border-radius: 8px 8px 0 0; transition: height 0.3s ease;"></div>
+            <div style="font-size: 11px; margin-top: 5px; color: #666;">{{ day.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Последние движения -->
+<div class="card">
+    <h3>🔄 Последние движения</h3>
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Время</th>
+                <th>Продукт</th>
+                <th>Тип</th>
+                <th>Кол-во</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for move in recent_movements %}
+            <tr>
+                <td>{{ move.timestamp.strftime('%H:%M') }}</td>
+                <td>{{ move.product.name }}</td>
+                <td>
+                    {% if move.quantity > 0 %}
+                    <span style="color: #28a745;">📦 Приход</span>
+                    {% else %}
+                    <span style="color: #dc3545;">➖ Расход</span>
+                    {% endif %}
+                </td>
+                <td>{{ move.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('movements') }}" style="display: block; text-align: center; margin-top: 15px; color: #667eea;">Все движения →</a>
+</div>
+
+<!-- Продукты, которые заканчиваются -->
+{% if low_stock_products %}
+<div class="card">
+    <h3>⚠️ Скоро закончатся</h3>
+    {% for product in low_stock_products %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
+        <div>
+            <strong>{{ product.name }}</strong>
+            <div style="font-size: 12px; color: #666;">{{ product.workshop }}</div>
+        </div>
+        <div style="text-align: right;">
+            <span style="color: #dc3545; font-weight: bold;">{{ product.current }} {{ product.unit }}</span>
+            <span style="color: #666; font-size: 12px;"> / мин. {{ product.min }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

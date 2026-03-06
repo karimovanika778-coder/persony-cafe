@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Технологические карты{% endblock %}
+{% block header %}📝 Рецепты{% endblock %}
+
+{% block content %}
+<div class="card" style="background: #e3f2fd;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h3 style="margin: 0;">🍳 Технологические карты</h3>
+            <p style="margin: 5px 0 0 0; color: #666;">Рецепты блюд и автоматическое списание</p>
+        </div>
+        <a href="{{ url_for('recipe_create') }}" class="btn btn-success">➕ Новый рецепт</a>
+    </div>
+</div>
+
+{% if recipes %}
+    {% for recipe in recipes %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <h3>{{ recipe.name }}</h3>
+                <p style="color: #666; margin: 5px 0;">
+                    🍽️ {{ recipe.dish.name }} | 
+                    🔪 {{ recipe.workshop.name }} | 
+                    ⏱️ {{ recipe.cooking_time or '—' }} мин
+                </p>
+                <p style="color: #666;">
+                    📦 Ингредиентов: {{ recipe.ingredients|length }} | 
+                    💰 Себестоимость: {{ recipe.total_cost()|round(2) }} ₽
+                </p>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <a href="{{ url_for('recipe_view', recipe_id=recipe.id) }}" class="btn btn-primary">👁️ Просмотр</a>
+                <a href="{{ url_for('recipe_edit', recipe_id=recipe.id) }}" class="btn btn-secondary">✏️ Редакт.</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="card" style="text-align: center; padding: 30px;">
+    <div style="font-size: 48px; margin-bottom: 20px;">📝</div>
+    <h3>Нет рецептов</h3>
+    <p style="color: #666;">Создайте первую технологическую карту</p>
+    <a href="{{ url_for('recipe_create') }}" class="btn btn-success" style="margin-top: 15px;">➕ Создать рецепт</a>
+</div>
+{% endif %}
+{% endblock %}

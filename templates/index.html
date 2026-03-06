@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Выбор цеха{% endblock %}
+{% block header %}Ваш цех{% endblock %}
+
+{% block content %}
+    <div class="search-box" onclick="window.location.href='{{ url_for('search') }}'">
+        🔍 Нажмите для поиска продуктов...
+    </div>
+
+    <h2>Выберите ваш цех:</h2>
+    
+    {% for workshop in workshops %}
+        <a href="{{ url_for('workshop', workshop_id=workshop.id) }}" style="text-decoration: none;">
+            <div class="card">
+                <h3>{{ workshop.name }}</h3>
+                {% if workshop.description %}
+                    <p style="color: #666; margin-top: 5px;">{{ workshop.description }}</p>
+                {% endif %}
+                <div style="margin-top: 10px; color: #007bff;">Нажмите для входа →</div>
+            </div>
+        </a>
+    {% endfor %}
+{% endblock %}

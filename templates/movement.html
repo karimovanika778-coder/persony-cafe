@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Движение: {{ product.name }}{% endblock %}
+
+{% block header %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="margin-bottom: 20px;">
+        <p><strong>Цех:</strong> {{ workshop.name }}</p>
+        <p><strong>Текущий остаток:</strong> {{ current_quantity }} {{ product.unit }}</p>
+    </div>
+
+    {% if request.args.get('type') == 'income' %}
+        <h3 style="color: #28a745; margin-bottom: 15px;">📦 Приход продуктов</h3>
+        <form method="POST" action="{{ url_for('income') }}">
+    {% else %}
+        <h3 style="color: #dc3545; margin-bottom: 15px;">➖ Расход продуктов</h3>
+        <form method="POST" action="{{ url_for('expense') }}">
+    {% endif %}
+
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+
+        <div class="card" style="background: #f8f9fa;">
+            <label style="display: block; margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">Количество ({{ product.unit }}):</div>
+                <input type="number" name="quantity" step="0.001" min="0.001" required
+                       class="search-box" style="margin-bottom: 0;"
+                       placeholder="Введите количество">
+            </label>
+
+            <label style="display: block; margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">Причина:</div>
+                <select name="reason" class="search-box" style="margin-bottom: 0;">
+                    {% if request.args.get('type') == 'income' %}
+                        <option value="поставка">Поставка от поставщика</option>
+                        <option value="возврат">Возврат от гостя</option>
+                        <option value="перемещение">Перемещение из другого цеха</option>
+                        <option value="другое">Другое</option>
+                    {% else %}
+                        <option value="списание">Списание (бой, брак)</option>
+                        <option value="использование">Использовано в приготовлении</option>
+                        <option value="перемещение">Перемещение в другой цех</option>
+                        <option value="возврат">Возврат поставщику</option>
+                        <option value="другое">Другое</option>
+                    {% endif %}
+                </select>
+            </label>
+
+            <label style="display: block; margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">Комментарий (необязательно):</div>
+                <textarea name="comment" class="search-box" style="margin-bottom: 0; min-height: 80px;"
+                          placeholder="Дополнительная информация..."></textarea>
+            </label>
+
+            <div style="display: flex; gap: 10px;">
+                <a href="{{ url_for('workshop', workshop_id=workshop.id) }}"
+                   class="btn btn-secondary" style="flex: 1; text-align: center;">Отмена</a>
+                <button type="submit" class="btn btn-success" style="flex: 1;
+                        {% if request.args.get('type') != 'income' %}background-color: #dc3545;{% endif %}">
+                    {% if request.args.get('type') == 'income' %}
+                        ✅ Провести приход
+                    {% else %}
+                        ➖ Провести расход
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Подсказка -->
+<div class="card" style="background: #e7f3ff;">
+    <p style="color: #004085; margin: 0;">
+        <strong>ℹ️ Как это работает:</strong><br>
+        {% if request.args.get('type') == 'income' %}
+            Приход увеличивает остаток продуктов в цехе.
+        {% else %}
+            Расход уменьшает остаток продуктов в цехе. Убедитесь, что продуктов достаточно!
+        {% endif %}
+    </p>
+</div>
+{% endblock %}

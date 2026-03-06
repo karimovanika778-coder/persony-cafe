@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить продукт{% endblock %}
+{% block header %}Новый продукт{% endblock %}
+
+{% block content %}
+    <form method="POST" action="{{ url_for('add_product') }}">
+        {% if request.args.get('barcode') %}
+<input type="hidden" name="barcode" value="{{ request.args.get('barcode') }}">
+<div class="alert alert-info" style="background: #cce5ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    📦 Найден штрихкод: <strong>{{ request.args.get('barcode') }}</strong>
+</div>
+{% endif %}
+        <div class="card">
+            <label style="display: block; margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">Название продукта:</div>
+                <input type="text" name="name" required class="search-box" style="margin-bottom: 0;" placeholder="Например: Вырезка говяжья">
+            </label>
+            
+            <label style="display: block; margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">Штрихкод (необязательно):</div>
+                <input type="text" name="barcode" class="search-box" style="margin-bottom: 0;" placeholder="Введите или отсканируйте">
+            </label>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <label>
+                    <div style="margin-bottom: 5px;">Единица измерения:</div>
+                    <select name="unit" class="search-box" style="margin-bottom: 0;">
+                        <option value="кг">кг</option>
+                        <option value="шт">шт</option>
+                        <option value="л">л</option>
+                        <option value="г">г</option>
+                    </select>
+                </label>
+                
+                <label>
+                    <div style="margin-bottom: 5px;">Категория:</div>
+                    <input type="text" name="category" class="search-box" style="margin-bottom: 0;" placeholder="Мясо, овощи...">
+                </label>
+            </div>
+            
+            <label style="display: block; margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">Тип продукта:</div>
+                <select name="type" class="search-box" style="margin-bottom: 0;">
+                    <option value="ingredient">Ингредиент (сырье)</option>
+                    <option value="ready_dish">Готовое блюдо</option>
+                    <option value="retail">Привозной товар</option>
+                </select>
+            </label>
+            
+            <button type="submit" class="btn btn-success btn-block">💾 Сохранить продукт</button>
+        </div>
+    </form>
+{% endblock %}

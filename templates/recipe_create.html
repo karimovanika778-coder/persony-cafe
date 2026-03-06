@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Создание рецепта{% endblock %}
+{% block header %}📝 Новый рецепт{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">Название рецепта:</label>
+            <input type="text" name="name" required class="search-box" style="margin-bottom: 0;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">Готовое блюдо:</label>
+            <select name="dish_id" required class="search-box" style="margin-bottom: 0;">
+                <option value="">Выберите блюдо</option>
+                {% for dish in dishes %}
+                <option value="{{ dish.id }}">{{ dish.name }} ({{ dish.unit }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">Цех приготовления:</label>
+            <select name="workshop_id" required class="search-box" style="margin-bottom: 0;">
+                <option value="">Выберите цех</option>
+                {% for workshop in workshops %}
+                <option value="{{ workshop.id }}">{{ workshop.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px;">Выход (порций):</label>
+                <input type="number" name="portions" value="1" min="1" class="search-box" style="margin-bottom: 0;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px;">Время готовки (мин):</label>
+                <input type="number" name="cooking_time" class="search-box" style="margin-bottom: 0;">
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">Инструкция:</label>
+            <textarea name="instructions" rows="5" class="search-box" style="margin-bottom: 0;" 
+                      placeholder="Опишите процесс приготовления..."></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('recipes') }}" class="btn btn-secondary" style="flex: 1;">Отмена</a>
+            <button type="submit" class="btn btn-success" style="flex: 1;">✅ Создать рецепт</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Сканер штрихкодов{% endblock %}
+{% block header %}Сканер{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center;">
+    <div style="font-size: 48px; margin: 30px 0;">
+        📷
+    </div>
+
+    <h3>Сканер запускается...</h3>
+
+    <p style="color: #666; margin: 20px 0;">
+        Наведите камеру на штрихкод продукта.<br>
+        Дождитесь автоматического распознавания.
+    </p>
+
+    <div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: left;">
+        <p><strong>Советы:</strong></p>
+        <ul style="padding-left: 20px;">
+            <li>Держите камеру ровно</li>
+            <li>Штрихкод должен быть хорошо освещен</li>
+            <li>Держите телефон на расстоянии 10-15 см</li>
+        </ul>
+    </div>
+
+    <div style="background: #cce5ff; padding: 15px; border-radius: 8px; color: #004085;">
+        ⏱️ Если сканер не запускается автоматически через 5 секунд,
+        <a href="{{ url_for('scan_barcode_route') }}" style="color: #002752;">нажмите здесь</a>
+    </div>
+</div>
+
+<script>
+    // Автоматический переход к сканеру через 1 секунду
+    setTimeout(function() {
+        window.location.href = "{{ url_for('scan_barcode_route') }}";
+    }, 1000);
+</script>
+{% endblock %}

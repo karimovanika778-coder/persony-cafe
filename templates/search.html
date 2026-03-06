@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Поиск продуктов{% endblock %}
+{% block header %}Поиск{% endblock %}
+
+{% block content %}
+    <form method="GET" action="{{ url_for('search') }}">
+        <input type="text" name="q" value="{{ query }}" placeholder="Введите название продукта..." class="search-box" autofocus>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-bottom: 20px;">🔍 Найти</button>
+    </form>
+
+    {% if query and results %}
+        <h3>Результаты поиска "{{ query }}":</h3>
+        
+        {% for result in results %}
+            <div class="card">
+                <h4>{{ result.product.name }}</h4>
+                <p style="color: #666; font-size: 14px;">
+                    Ед. изм.: {{ result.product.unit }} | 
+                    Тип: {% if result.product.type == 'ingredient' %}Ингредиент{% elif result.product.type == 'ready_dish' %}Готовое блюдо{% else %}Привозной{% endif %}
+                </p>
+                
+                <div style="margin-top: 10px;">
+                    <strong>Наличие по цехам:</strong>
+                    {% if result.stocks %}
+                        {% for stock in result.stocks %}
+                            <div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 6px;">
+                                <span class="workshop-badge">{{ stock.workshop.name }}</span>
+                                <span style="float: right;">
+                                    <strong>{{ stock.quantity }}</strong> {{ stock.product.unit }}
+                                </span>
+                                <div style="clear: both;"></div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #999;">Нет в наличии ни в одном цехе</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% elif query %}
+        <div class="card" style="text-align: center; color: #666;">
+            Ничего не найдено по запросу "{{ query }}"
+        </div>
+    {% endif %}
+{% endblock %}

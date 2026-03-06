@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recipe.name }}{% endblock %}
+{% block header %}{{ recipe.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <a href="{{ url_for('recipes') }}" class="btn btn-secondary">← К списку</a>
+        <a href="{{ url_for('recipe_edit', recipe_id=recipe.id) }}" class="btn btn-primary">✏️ Редактировать</a>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+        <p><strong>🍽️ Блюдо:</strong> {{ recipe.dish.name }}</p>
+        <p><strong>🔪 Цех:</strong> {{ recipe.workshop.name }}</p>
+        <p><strong>⏱️ Время приготовления:</strong> {{ recipe.cooking_time or '—' }} мин</p>
+        <p><strong>📦 Количество ингредиентов:</strong> {{ recipe.ingredients|length }}</p>
+    </div>
+</div>
+
+<!-- Форма приготовления -->
+<div class="card" style="background: #e3f2fd;">
+    <h3>🍳 Приготовление</h3>
+    <form method="POST" action="{{ url_for('recipe_cook', recipe_id=recipe.id) }}" style="display: flex; gap: 10px; align-items: center;">
+        <input type="number" name="portions" value="1" min="1" class="quantity-input" style="width: 80px;">
+        <span>порций</span>
+        <button type="submit" class="btn btn-success">👨‍🍳 Приготовить</button>
+    </form>
+</div>
+
+<!-- Ингредиенты -->
+<div class="card">
+    <h3>📋 Состав (на {{ recipe.portions }} порций)</h3>
+    
+    {% if recipe.ingredients %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8f9fa;">
+                <th style="padding: 10px; text-align: left;">Ингредиент</th>
+                <th style="padding: 10px; text-align: center;">Количество</th>
+                <th style="padding: 10px; text-align: center;">Ед.</th>
+                <th style="padding: 10px; text-align: left;">Примечание</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ing in recipe.ingredients %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;">{{ ing.product.name }}</td>
+                <td style="padding: 10px; text-align: center;">{{ ing.quantity }}</td>
+                <td style="padding: 10px; text-align: center;">{{ ing.unit }}</td>
+                <td style="padding: 10px; color: #666;">{{ ing.notes or '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; color: #999; padding: 20px;">В рецепте нет ингредиентов</p>
+    {% endif %}
+</div>
+
+<!-- Инструкция -->
+{% if recipe.instructions %}
+<div class="card">
+    <h3>📝 Инструкция</h3>
+    <p style="white-space: pre-line;">{{ recipe.instructions }}</p>
+</div>
+{% endif %}
+{% endblock %}

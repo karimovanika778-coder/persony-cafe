@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Заказы{% endblock %}
+{% block header %}📋 Заказы{% endblock %}
+
+{% block content %}
+<!-- Форма создания нового заказа -->
+<div class="card" style="background: #e3f2fd;">
+    <h3 style="margin-bottom: 15px;">➕ Создать новый заказ</h3>
+    <form method="POST" action="{{ url_for('create_order') }}">
+        <div style="display: grid; gap: 10px;">
+            <select name="product_id" required class="search-box" style="margin-bottom: 0;">
+                <option value="">Выберите продукт</option>
+                {% for product in products %}
+                <option value="{{ product.id }}">{{ product.name }} ({{ product.unit }})</option>
+                {% endfor %}
+            </select>
+
+            <select name="workshop_id" required class="search-box" style="margin-bottom: 0;">
+                <option value="">Для какого цеха</option>
+                {% for workshop in workshops %}
+                <option value="{{ workshop.id }}">{{ workshop.name }}</option>
+                {% endfor %}
+            </select>
+
+            <div style="display: flex; gap: 10px;">
+                <input type="number" name="quantity" step="0.001" placeholder="Количество" required
+                       class="search-box" style="margin-bottom: 0; flex: 1;">
+
+                <select name="priority" class="search-box" style="margin-bottom: 0; width: 120px;">
+                    <option value="low">🟢 Низкий</option>
+                    <option value="normal" selected>🟡 Средний</option>
+                    <option value="high">🔴 Высокий</option>
+                </select>
+            </div>
+
+            <input type="text" name="comment" placeholder="Комментарий (необязательно)"
+                   class="search-box" style="margin-bottom: 0;">
+
+            <button type="submit" class="btn btn-success">✅ Создать заказ</button>
+        </div>
+    </form>
+</div>
+
+<!-- Активные заказы -->
+<div class="card">
+    <h3 style="margin-bottom: 15px;">⚡ Активные заказы</h3>
+
+    {% if active_orders %}
+        {% for order in active_orders %}
+        <div class="card" style="margin-bottom: 10px; padding: 12px;
+                {% if order.priority == 'high' %}border-left: 4px solid #dc3545;{% elif order.priority == 'low' %}border-left: 4px solid #28a745;{% else %}border-left: 4px solid #ffc107;{% endif %}">
+
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <strong style="font-size: 16px;">{{ order.product.name }}</strong>
+                    <span style="color: #666; margin-left: 8px;">{{ order.workshop.name }}</span>
+                </div>
+                <div>
+                    {% if order.priority == 'high' %}
+                        <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">🔴 Срочно</span>
+                    {% elif order.priority == 'low' %}
+                        <span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">🟢 Не срочно</span>
+                    {% else %}
+                        <span style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 12px; font-size: 12px;">🟡 Обычный</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="margin: 10px 0; display: flex; align-items: baseline;">
+                <span style="font-size: 20px; font-weight: bold;">{{ order.quantity }}</span>
+                <span style="color: #666; margin-left: 5px;">{{ order.unit }}</span>
+            </div>
+
+            {% if order.comment %}
+            <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin: 8px 0; font-size: 13px;">
+                💬 {{ order.comment }}
+            </div>
+            {% endif %}
+
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <a href="{{ url_for('complete_order', order_id=order.id) }}"
+                   class="btn btn-success" style="flex: 2; padding: 8px;">✅ Выполнен</a>
+                <a href="{{ url_for('cancel_order', order_id=order.id) }}"
+                   class="btn btn-secondary" style="flex: 1; padding: 8px;">❌ Отмена</a>
+                <button onclick="showEditForm({{ order.id }})"
+                        class="btn btn-secondary" style="flex: 1; padding: 8px;">✏️</button>
+            </div>
+
+            <!-- Скрытая форма редактирования -->
+            <div id="edit-form-{{ order.id }}" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd;">
+                <form method="POST" action="{{ url_for('edit_order', order_id=order.id) }}">
+                    <div style="display: grid; gap: 8px;">
+                        <input type="number" name="quantity" value="{{ order.quantity }}" step="0.001"
+                               class="search-box" style="margin-bottom: 0;">
+                        <select name="priority" class="search-box" style="margin-bottom: 0;">
+                            <option value="low" {% if order.priority == 'low' %}selected{% endif %}>🟢 Низкий</option>
+                            <option value="normal" {% if order.priority == 'normal' %}selected{% endif %}>🟡 Средний</option>
+                            <option value="high" {% if order.priority == 'high' %}selected{% endif %}>🔴 Высокий</option>
+                        </select>
+                        <input type="text" name="comment" value="{{ order.comment }}" placeholder="Комментарий"
+                               class="search-box" style="margin-bottom: 0;">
+                        <div style="display: flex; gap: 5px;">
+                            <button type="submit" class="btn btn-success" style="flex: 1;">💾 Сохранить</button>
+                            <button type="button" onclick="hideEditForm({{ order.id }})" class="btn btn-secondary" style="flex: 1;">Отмена</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="text-align: center; color: #999; padding: 20px;">Нет активных заказов</p>
+    {% endif %}
+</div>
+
+<!-- Выполненные заказы -->
+{% if completed_orders %}
+<div class="card">
+    <h3 style="margin-bottom: 15px;">✅ Выполненные заказы</h3>
+    {% for order in completed_orders %}
+    <div style="padding: 8px; border-bottom: 1px solid #eee; color: #666; font-size: 13px;">
+        <span style="text-decoration: line-through;">{{ order.product.name }}</span>
+        <span style="margin-left: 8px;">{{ order.quantity }} {{ order.unit }}</span>
+        <span style="float: right;">{{ order.completed_at.strftime('%d.%m') }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+function showEditForm(orderId) {
+    document.getElementById(`edit-form-${orderId}`).style.display = 'block';
+}
+
+function hideEditForm(orderId) {
+    document.getElementById(`edit-form-${orderId}`).style.display = 'none';
+}
+</script>
+{% endblock %}

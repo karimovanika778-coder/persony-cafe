@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Отчёты{% endblock %}
+{% block header %}📊 Отчёты{% endblock %}
+
+{% block content %}
+<div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 48px; margin-bottom: 15px;">📑</div>
+        <h2 style="color: white; margin-bottom: 10px;">Генерация отчётов</h2>
+        <p style="opacity: 0.9;">Выберите нужный отчёт для экспорта в Excel</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>📋 Полный отчёт</h3>
+    <p style="color: #666; margin-bottom: 15px;">Все данные одним файлом: остатки, заказы, движения</p>
+    <a href="{{ url_for('export_excel') }}" class="btn btn-success btn-block" style="padding: 15px;">
+        📥 Скачать полный отчёт (Excel)
+    </a>
+</div>
+
+<div class="card">
+    <h3>📊 Сводка по цехам</h3>
+    <p style="color: #666; margin-bottom: 15px;">Количество продуктов по цехам</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        {% for stat in workshop_stats %}
+        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
+            <strong>{{ stat.name }}</strong>
+            <div style="font-size: 12px; color: #666;">Позиций: {{ stat.stocks_count }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <h3>⚠️ Проблемные продукты</h3>
+    <p style="color: #666;">Продуктов ниже минимума: <strong>{{ low_stocks_count }}</strong></p>
+    <a href="{{ url_for('export_excel') }}" class="btn btn-warning btn-block">⚠️ Скачать список для заказа</a>
+</div>
+
+<div class="card">
+    <h3>📈 Движения продуктов</h3>
+    <p style="color: #666; margin-bottom: 15px;">История приходов и расходов</p>
+    <div style="display: flex; gap: 10px;">
+        <a href="{{ url_for('export_movements') }}?days=7" class="btn btn-primary" style="flex: 1;">7 дней</a>
+        <a href="{{ url_for('export_movements') }}?days=30" class="btn btn-primary" style="flex: 1;">30 дней</a>
+        <a href="{{ url_for('export_movements') }}" class="btn btn-primary" style="flex: 1;">Все</a>
+    </div>
+</div>
+
+<div class="card">
+    <h3>📦 Активные заказы</h3>
+    <p style="color: #666;">Текущих заказов: <strong>{{ active_orders_count }}</strong></p>
+    <a href="{{ url_for('orders') }}" class="btn btn-secondary">Перейти к заказам</a>
+</div>
+
+<style>
+.btn-warning {
+    background-color: #ffc107;
+    color: #333;
+}
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+</style>
+{% endblock %}

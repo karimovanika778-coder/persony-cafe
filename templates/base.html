@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>{% block title %}Инвентаризация кафе{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 80px;
+            transition: background 0.3s ease;
+        }
+
+        /* Главный контейнер для контента */
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box:hover {
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .flash-message {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #28a745;
+            animation: slideIn 0.3s ease;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 8px;
+            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            flex-wrap: wrap;
+            z-index: 999;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 8px 12px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .workshop-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            border-radius: 50px;
+            font-size: 12px;
+            margin-right: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        /* Анимации */
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Уведомление о заказах */
+        #notification-area {
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+
+        #notification-area div {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+            border: none;
+        }
+
+        /* Стили для таблиц */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            font-weight: 500;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .bottom-nav {
+                padding: 8px 4px;
+            }
+
+            .nav-item {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+        /* Тёмная тема */
+body.dark-theme {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+body.dark-theme .header {
+    background: rgba(30, 30, 46, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .header h1 {
+    background: linear-gradient(135deg, #a8b8ff, #c9a8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.dark-theme .card {
+    background: rgba(30, 30, 46, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme p {
+    color: #fff;
+}
+
+body.dark-theme .search-box {
+    background: #2a2a3a;
+    color: #fff;
+    border-color: #3a3a4a;
+}
+
+body.dark-theme .search-box::placeholder {
+    color: #888;
+}
+
+body.dark-theme .bottom-nav {
+    background: rgba(30, 30, 46, 0.95);
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .nav-item {
+    color: #aaa;
+}
+
+body.dark-theme .nav-item:hover,
+body.dark-theme .nav-item.active {
+    background: linear-gradient(135deg, #4a4a6a 0%, #3a3a5a 100%);
+    color: white;
+}
+
+body.dark-theme .workshop-badge {
+    background: #2a2a3a;
+    color: #ddd;
+}
+
+body.dark-theme table {
+    background: #2a2a3a;
+    color: #fff;
+}
+
+body.dark-theme td {
+    border-bottom-color: #3a3a4a;
+}
+
+body.dark-theme tr:hover {
+    background: #3a3a4a;
+}
+
+body.dark-theme .flash-message {
+    background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2e 100%);
+    color: #a8b8ff;
+    border-left-color: #667eea;
+}
+
+/* Переключатель темы */
+#theme-toggle {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    z-index: 1000;
+    background: white;
+    border-radius: 50px;
+    padding: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+body.dark-theme #theme-toggle {
+    background: #2a2a3a;
+}
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>{% block header %}Инвентаризация{% endblock %}</h1>
+            <div class="nav-buttons">
+                {% if request.endpoint != 'index' %}
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">На главную</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Блок уведомлений о заказах (закрываемый) -->
+        <div id="notification-area" style="position: fixed; top: 80px; right: 20px; z-index: 1000; display: none;">
+            <div style="color: white; padding: 15px 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3); position: relative; min-width: 280px;">
+                <button onclick="closeNotification()" style="position: absolute; top: 10px; right: 12px; background: none; border: none; color: white; font-size: 20px; cursor: pointer; font-weight: bold;">&times;</button>
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 24px; margin-right: 12px;">⚠️</span>
+                    <span style="font-weight: 600; font-size: 16px;">Есть продукты для заказа</span>
+                </div>
+                <div style="text-align: right;">
+                    <a href="{{ url_for('orders') }}" style="color: white; background-color: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 50px; text-decoration: none; font-size: 14px; display: inline-block;">Перейти к заказам →</a>
+                </div>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+    <div class="bottom-nav">
+        <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">🏠 Цеха</a>
+        <a href="{{ url_for('inventory') }}" class="nav-item {% if request.endpoint == 'inventory' %}active{% endif %}">📊 Инвентаризация</a>
+        <a href="{{ url_for('recipes') }}" class="nav-item {% if request.endpoint == 'recipes' %}active{% endif %}">📝 Рецепты</a>
+        <a href="{{ url_for('reports') }}" class="nav-item {% if request.endpoint == 'reports' %}active{% endif %}">📊 Отчёты</a>
+        <a href="{{ url_for('backups') }}" class="nav-item {% if request.endpoint == 'backups' %}active{% endif %}">💾 Бэкапы</a>
+        <a href="{{ url_for('scan') }}" class="nav-item {% if request.endpoint == 'scan' %}active{% endif %}">📷 Сканер</a>
+        <a href="{{ url_for('search') }}" class="nav-item {% if request.endpoint == 'search' %}active{% endif %}">🔍 Поиск</a>
+        <a href="{{ url_for('orders') }}" class="nav-item {% if request.endpoint == 'orders' %}active{% endif %}">📋 Заказы</a>
+        <a href="{{ url_for('movements') }}" class="nav-item {% if request.endpoint == 'movements' %}active{% endif %}">📋 Журнал</a>
+        <a href="{{ url_for('add_product') }}" class="nav-item {% if request.endpoint == 'add_product' %}active{% endif %}">➕ Добавить</a>
+    </div>
+
+    <script>
+    // Функция для закрытия уведомления
+    function closeNotification() {
+        document.getElementById('notification-area').style.display = 'none';
+        localStorage.setItem('notification_closed', 'true');
+    }
+
+    // Функция проверки наличия продуктов
+    function checkLowStock() {
+        fetch('/api/low_stock_count')
+            .then(response => response.json())
+            .then(data => {
+                const notification = document.getElementById('notification-area');
+                const wasClosed = localStorage.getItem('notification_closed') === 'true';
+
+                if (data.count > 0 && !wasClosed) {
+                    notification.style.display = 'block';
+                } else {
+                    notification.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при проверке остатков:', error);
+            });
+    }
+
+    // Загрузка при старте
+    document.addEventListener('DOMContentLoaded', function() {
+        // Сбрасываем закрытое состояние при переходе на страницу заказов
+        document.querySelectorAll('a[href="/orders"]').forEach(link => {
+            link.addEventListener('click', function() {
+                localStorage.removeItem('notification_closed');
+            });
+        });
+
+        // Добавляем анимацию появления для карточек
+        document.querySelectorAll('.card').forEach((card, index) => {
+            card.style.animation = `slideIn 0.3s ease ${index * 0.1}s forwards`;
+            card.style.opacity = '0';
+        });
+    });
+
+    // Проверяем каждые 30 секунд
+    setInterval(checkLowStock, 30000);
+    checkLowStock();
+        // Переключение темы
+function toggleTheme() {
+    const body = document.body;
+    const themeIcon = document.getElementById('theme-icon');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+
+    if (currentTheme === 'light') {
+        body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+        themeIcon.textContent = '🌙';
+    } else {
+        body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+        themeIcon.textContent = '🌞';
+    }
+}
+
+// Загрузка сохранённой темы
+document.addEventListener('DOMContentLoaded', function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const themeIcon = document.getElementById('theme-icon');
+
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        themeIcon.textContent = '🌙';
+    }
+
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+    // Остальной код...
+});
+    </script>
+<!-- Переключатель темы -->
+<div id="theme-toggle">
+    <span id="theme-icon" style="font-size: 24px; padding: 5px;">🌞</span>
+</div>
+</body>
+</html>
