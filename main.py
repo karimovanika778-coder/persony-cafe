@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from database import db, Workshop, Product, Stock, Movement, Order, Recipe, RecipeIngredient
 from datetime import datetime
 import os
-import cv2
+#import cv2
 import numpy as np
 from pyzbar.pyzbar import decode
 import threading
@@ -1172,4 +1172,5 @@ def dashboard():
                            movements=movements_data)
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
